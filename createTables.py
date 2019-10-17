@@ -5,7 +5,7 @@ try:
     conn = psycopg2.connect(
         database = "pythonproject", # database name
         user = "postgres",
-        password = "Nowhere25Man", #your password
+        password = "6108", #your password
         host = "127.0.0.1",
         port = "5432"
     )
@@ -32,8 +32,8 @@ try:
 			user_fullname text NOT NULL,
 			user_email text NOT NULL,
 			user_password text NOT NULL,
-			user_adress text NOT NULL,
-			phone_number text NOT NULL)"""
+			user_adress text,
+			phone_number text)"""
    		) #FULLNAME
         conn.commit()
         

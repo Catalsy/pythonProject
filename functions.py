@@ -1,7 +1,7 @@
 import hashlib, binascii, os, psycopg2, re, getpass
 
 #GLOBAL VARIABLES
-user_id = 0
+current_user_id = 0
 login = False
 
 def clear(): 
@@ -46,7 +46,7 @@ try:
     conn = psycopg2.connect(
         database = "pythonproject", # database name
         user = "postgres",
-        password = "Nowhere25Man", #your password
+        password = "6108", #your password
         host = "127.0.0.1",
         port = "5432"
     )
@@ -69,7 +69,7 @@ try:
             else:
                 break
         
-        name = input("\nName: ").title()
+        name = input("\nFull Name: ").title()
         
         #email input and check
         while True:
@@ -100,36 +100,27 @@ try:
             
             else:
                 print("Passwords don't match, please try again\n")
-        
-        adress = input("\nHome adress: ")
-        
-        #phone number input and check
-        while True:
-            phone_number = input("\nPhone Number: ")
-            
-            if len(str(phone_number)) != 10:
-                print("Please, type a 10 digit phone number\n")
-            
-            else:
-                try:
-                    phone_number = int(phone_number)
-                    break
-                
-                except:
-                    print("Invalid phone number, please only type numbers\n")
 
         cursor = conn.cursor()
         cursor.execute(
-            """INSERT INTO users (user_username, user_fullname, user_email, user_password, user_adress, phone_number)
-            VALUES (%s, %s, %s, %s, %s, %s)""", (username, name, email, password, adress, phone_number)
+            """INSERT INTO users (user_username, user_fullname, user_email, user_password)
+            VALUES (%s, %s, %s, %s)""", (username, name, email, password)
         )
         conn.commit()
         cursor.close()
         
-        login = True
-        print("Thank you for registering!")
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT user_id FROM users WHERE user_username = '%s'""" % username
+        )
+        record = cursor.fetchall()
+        cursor.close()
         
+        current_user_id = record[0][0]
+        login = True
     
+        print("Thank you for registering!\n")
+        
     def main_menu():
         #shows main menu and returns product_id of selected product 
         
@@ -208,11 +199,87 @@ try:
         # adds selected product to cart (orders table)
         cursor = conn.cursor()
         cursor.execute("""INSERT INTO orders (user_id, product_id, order_status)
-                       VALUES (%s, %s, 'cart')""", (user_id, product_id))
+                       VALUES (%s, %s, 'cart')""", (current_user_id, product_id))
         conn.commit()
         cursor.close()
     
-    
+    def checkout():
+        
+        #checkout cart
+        if login == False:
+            while True:
+                account = input("Do you have an account with us? (Y/N): ").upper()
+                
+                if account[:1] == 'Y':
+                    #log_in()
+                    break
+                
+                elif account[:1] == 'N':
+                    print("")
+                    register_user()
+                    break
+                
+                else:
+                    print("Please, type \'Y\' or \'N\'\n")
+                    
+        while True:
+            pickup_or_delivery = input("Are you picking up the products or do you want delivery? (P/D): ").upper()
+            
+            if pickup_or_delivery[:1] == "D":
+                print("For delivery we will need more information: ")
 
+                #phone number input and check
+                while True:
+                    phone_number = input("\nPhone Number: ")
+                    
+                    if len(str(phone_number)) != 10:
+                        print("Please, type a 10 digit phone number\n")
+                    
+                    else:
+                        try:
+                            phone_number = int(phone_number)
+                            break
+                        
+                        except:
+                            print("Invalid phone number, please only type numbers\n")
+            
+                adress = input("\nHome adress: ")
+                
+                cursor = conn.cursor()
+                cursor.execute(
+                    """UPDATE users SET (phone_number, user_adress)
+                    VALUES (%s, %s) WHERE user_id = '%s'""", (phone_number, adress, current_user_id)
+                )
+                conn.commit()
+                cursor.close()
+
+            elif pickup_or_delivery[:1] == "P":
+                print("You chose pickup")
+                break
+            
+            else:
+                print("Please, type \'P\' or \'D\'\n")
+        
+        print(" - ORDER SUMMARY - ")
+        
+        cursor = conn.cursor()
+        cursor.execute("""SELECT orders.order_number, 
+                        CONCAT(INITCAP(TO_CHAR(orders.order_time, 'day')),', ',
+                        INITCAP(TO_CHAR(orders.order_time, 'mon')), ' ',
+                        INITCAP(TO_CHAR(orders.order_time, 'dd'))), 
+                        products.product_model, 
+                        CONCAT('$',products.product_price)
+                        FROM orders INNER JOIN products 
+                        ON orders.product_id = products.product_id
+                        WHERE user_id = '%s' AND order_status = 'cart'"""%current_user_id)
+        records = cursor.fetchall()
+        cursor.close()
+
+        # print order summary
+        # 
+        # order total
+    
+    checkout()    
+    
 except (Exception, psycopg2.Error) as error:
     print("Error while fetching data PostgreSQL", error)

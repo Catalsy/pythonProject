@@ -1,4 +1,0 @@
-________________________PYTHON PROJECT___________________________
-DESCRIPTION: The idea of the project is to replicate an online apple-like store.
-
-____________________________FILES___________________________________
