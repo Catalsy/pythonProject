@@ -130,7 +130,7 @@ try:
               |      MENU       |
               |_________________|
               """)
-        print("PRODUCTS & SERVICES:")
+        print("PRODUCTS & SERVICES:\n")
         cursor = conn.cursor()
         cursor.execute("SELECT DISTINCT product_type FROM products")
         types = cursor.fetchall()
@@ -171,13 +171,12 @@ try:
         
         option_counter = 1
         for product in models:
-            print(f"{option_counter}.{product[0]} ${product[1]}  ", end='')
-            if (option_counter%4) == 0:
-                print("") 
+            print(f"{option_counter}.{product[0]} ${product[1]}  ")
+
             option_counter += 1
         
         option_counter -= 1
-        print("\n")
+        print()
         while True:
             try:
                 selected_option = int(input(f"Please select an option to add to the cart [1 - {option_counter}]: "))
@@ -279,7 +278,7 @@ try:
         # 
         # order total
     
-    checkout()    
+    main_menu() 
     
 except (Exception, psycopg2.Error) as error:
     print("Error while fetching data PostgreSQL", error)
