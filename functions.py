@@ -1,7 +1,7 @@
 import hashlib, binascii, os, psycopg2, re, getpass
 
 #GLOBAL VARIABLES
-current_user_id = 0
+current_user_id = 1
 login = False
 
 def clear(): 
@@ -202,9 +202,8 @@ try:
         conn.commit()
         cursor.close()
     
-    def checkout():
+    def summary():
         
-        #checkout cart
         if login == False:
             while True:
                 account = input("Do you have an account with us? (Y/N): ").upper()
@@ -254,31 +253,61 @@ try:
 
             elif pickup_or_delivery[:1] == "P":
                 print("You chose pickup")
+                print()
                 break
             
             else:
                 print("Please, type \'P\' or \'D\'\n")
-        
-        print(" - ORDER SUMMARY - ")
-        
+               
         cursor = conn.cursor()
-        cursor.execute("""SELECT orders.order_number, 
+        cursor.execute("""SELECT orders.order_number,
                         CONCAT(INITCAP(TO_CHAR(orders.order_time, 'day')),', ',
                         INITCAP(TO_CHAR(orders.order_time, 'mon')), ' ',
-                        INITCAP(TO_CHAR(orders.order_time, 'dd'))), 
-                        products.product_model, 
-                        CONCAT('$',products.product_price)
-                        FROM orders INNER JOIN products 
+                        INITCAP(TO_CHAR(orders.order_time, 'dd'))),
+                        products.product_model,
+                        CONCAT(products.product_price)
+                        FROM orders INNER JOIN products
                         ON orders.product_id = products.product_id
                         WHERE user_id = '%s' AND order_status = 'cart'"""%current_user_id)
-        records = cursor.fetchall()
+        orders = cursor.fetchall()
         cursor.close()
-
-        # print order summary
-        # 
-        # order total
+        clear()
+        
+        prices = []
+        if orders:
+            print("""
+               _________________
+              |     SUMMARY     |
+              |_________________|
+              """)
+            
+            for order in orders:
+                print(f"""Order #{order[0]}
+                Product: {order[2]}
+                Date: {order[1]}
+                Price: ${order[3]}""")
+                prices.append(int(order[3]))
+        
+        else:
+            print("Your cart is empty")
+        
+        subtotal = 0
+        
+        for x in prices:
+            subtotal = subtotal + x
+        
+        tax = subtotal * 0.7
+        total = subtotal + tax
+        
+        print()
+        
+        print("Subtotal -- ${:.2f}".format(subtotal))
+        print("Taxes ----- ${:.2f}".format(tax))
+        print("Total ----- ${:.2f}".format(total))
+        
+        #checkout()
     
-    main_menu() 
+    #def checkout():
     
 except (Exception, psycopg2.Error) as error:
     print("Error while fetching data PostgreSQL", error)
