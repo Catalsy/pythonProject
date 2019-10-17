@@ -48,20 +48,7 @@ try:
 		) #PENDING #
         conn.commit()
         cursor.close()
-        # EXPLAINED
-		#	 order_time column: 
- 		# 		TIMESTAMP is a type of data, is has a date/time format.
-		#	 	DEFAULT: means that if we do not insert anything in that field, by DEFAULT the dabase is going to 
-		#	 	put in that field the CURRENT_TIMESTAMP aka current date and time.
-		#	 	in other words, everytime the users makes an order, the system is going to store the date/time automatically.
-		#	 FOREIGN KEY:
-		#		we should keep track of which usered ordered each ordered. So we should have a way of saying 'The user id 
-  		# 		in this table is going to be same one as in the users table'.
-  		# 		that's why we use FOREIGN KEY, it gives us the ability to relate (or reference) a column from one table 
-    	# 		to a column from another table. IT IS NOT A NEW COLUMN CALLED 'FOREIGN KEY' IT IS A PROPERTY OF THE TABLE.
-		#		in this case, the column 'user_id' from the 'orders' table, is going to have the same value as the 
-		#		column 'user_id' from the table 'users'. 
-        
+                
     createTables()
         
 

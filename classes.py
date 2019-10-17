@@ -10,7 +10,7 @@ try:
         port = "5432"
     )
     
-    class User:
+    class Users:
         def __init__(self, username = None, name = None, email = None, password = None, adress = None, phone_number = None):
             self.username = username
             self.name = name
@@ -27,6 +27,7 @@ try:
             )
             conn.commit()
             cursor.close()
+
 
 except (Exception, psycopg2.Error) as error:
     print("Error while fetching data PostgreSQL", error)
