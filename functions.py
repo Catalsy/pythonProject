@@ -5,6 +5,10 @@ import psycopg2
 import re
 import getpass
 
+# GLOBAL VARIABLES
+current_user_id = 0
+login = False
+
 def clear():
     # for windows
     if os.name == 'nt':
