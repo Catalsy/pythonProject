@@ -6,8 +6,9 @@ import re
 import getpass
 
 # GLOBAL VARIABLES
-current_user_id = 0
+current_user_id = 1
 login = False
+
 
 def clear():
     # for windows
@@ -17,6 +18,14 @@ def clear():
     # for mac and linux(here, os.name is 'posix')
     else:
         _ = os.system('clear')
+
+
+def validate_card(number):
+    numlist = [int(x) for x in reversed(str(number)) if x.isdigit()]
+    count = sum(x for i, x in enumerate(numlist) if i % 2 == 0)
+    count += sum(sum(divmod(2 * x, 10))
+                 for i, x in enumerate(numlist) if i % 2 != 0)
+    return (count % 10 == 0)
 
 
 def hash_password(password):
@@ -55,7 +64,7 @@ try:
     conn = psycopg2.connect(
         database="pythonproject",  # database name
         user="postgres",
-        password="6108",  # your password
+        password="Nowhere25Man",  # your password
         host="127.0.0.1",
         port="5432"
     )
@@ -192,10 +201,16 @@ try:
         print()
         while True:
             try:
+                print(
+                    f"Please select an option to add to the cart [1 - {option_counter}]")
                 selected_option = int(
-                    input(f"Please select an option to add to the cart [1 - {option_counter}]: "))
+                    input(f"You can also type '0' to go back to main menu: "))
 
-                if selected_option < 1 or selected_option > (option_counter):
+                if selected_option == 0:
+                    main_menu()
+                    break
+
+                elif selected_option < 0 or selected_option > (option_counter):
                     print("Please type a number within the range\n")
 
                 else:
@@ -298,7 +313,7 @@ try:
 
         cursor = conn.cursor()
         cursor.execute("""SELECT orders.order_number,
-                        CONCAT(INITCAP(TO_CHAR(orders.order_time, 'day')),', ',
+                        CONCAT(INITCAP(TO_CHAR(orders.order_time, 'day')),
                         INITCAP(TO_CHAR(orders.order_time, 'mon')), ' ',
                         INITCAP(TO_CHAR(orders.order_time, 'dd'))),
                         products.product_model,
@@ -309,8 +324,10 @@ try:
         orders = cursor.fetchall()
         cursor.close()
 
+        subtotal = 0
         total = 0
         prices = []
+        order_number_collection = []
         if orders:
             print("""
                _________________
@@ -324,29 +341,136 @@ try:
                 Date: {order[1]}
                 Price: ${order[3]}""")
                 prices.append(int(order[3]))
-
-                subtotal = 0
-
-                for x in prices:
-                    subtotal = subtotal + x
-
-                tax = subtotal * 0.07
-                total = subtotal + tax
+                order_number_collection.append(int(order[0]))
 
                 print()
-
-                print("Subtotal -- ${:.2f}".format(subtotal))
-                print("Taxes ----- ${:.2f}".format(tax))
-                print("Total ----- ${:.2f}".format(total))
 
         else:
             print("Your cart is empty")
 
+        for x in prices:
+            subtotal = subtotal + x
+
+        tax = subtotal * 0.07
+        total = subtotal + tax
+
+        print("Subtotal -- ${:.2f}".format(subtotal))
+        print("Taxes ----- ${:.2f}".format(tax))
+        print("Total ----- ${:.2f}".format(total))
+
+        while True:
+            agree = input("Are you okay with your order? (Y/N): ").upper()
+
+            if agree[:1] == 'N':
+                add_or_remove = input(
+                    "Do you want to add or remove something? (A/R): ").upper()
+
+                while True:
+                    if add_or_remove[:1] == 'A':
+                        print("Awesome, lets go back to main menu")
+                        main_menu()
+                        summary()
+                        break
+
+                    elif add_or_remove[:1] == 'R':
+                        
+                        print(order_number_collection)
+                        
+                        while True:
+                            try:
+                                order_number = int(
+                                    input("Okay, give me the order # of the Item: "))
+                            except:
+                                print("Hey!, Only numbers")
+
+                            if order_number not in order_number_collection:
+                                print(
+                                    "SORRY! There's not an order with that number!")
+
+                            else:
+                                break
+                            
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            """DELETE FROM orders WHERE order_number = %s""" % order_number)
+                        conn.commit()
+                        cursor.close()
+
+                        
+                        print(f"Order #{order_number} was removed")
+                        summary()
+                        break
+
+                    else:
+                        print("Hey! Invalid option")
+
+            elif agree[:1] == 'Y':
+                print("Awesome, lets proceed with the payment")
+                break
+
+            else:
+                print("Hey! Invalid option")
+
         return(total)
 
-    def checkout():
-        print("We only accept ")
+    def checkout(total):  # input total and
+        print("We only accept debit/credit cards :)\n")
 
+        while True:
+            try:
+                while True:
+                    number = int(input("Card number: "))
+                    valid = validate_card(number)
+
+                    if not valid:
+                        print("That is not a valid card number, lets try again\n")
+
+                    else:
+                        print()
+                        break
+
+                while True:
+                    expiration_month = int(
+                        input("Expiration month (number): "))
+
+                    if expiration_month > 12 or expiration_month < 1:
+                        print("Invalid expiration month, lets try again\n")
+
+                    else:
+                        print()
+                        break
+
+                while True:
+                    expiration_year = int(
+                        input("Expiration year (full number): "))
+
+                    if expiration_year > 2040 or expiration_year < 2019:
+                        print("Invalid expiration year, lets try again\n")
+
+                    else:
+                        print()
+                        break
+
+                while True:
+                    cvv = int(input("CVV: "))
+
+                    if not len(str(cvv)) == 3:
+                        print("Invalid CVV, lets try again\n")
+
+                    else:
+                        print()
+                        break
+
+                break
+
+            except:
+                print("Please, only type numbers\n")
+
+        print(f"You have been charged ${total}, you're rich LOL")
+
+        print("Thank you for your purchase")
+
+        # def change_order():
 
 except (Exception, psycopg2.Error) as error:
     print("Error while fetching data PostgreSQL", error)
