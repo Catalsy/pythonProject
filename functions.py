@@ -7,7 +7,7 @@ import getpass
 
 # GLOBAL VARIABLES
 current_user_id = 1
-login = False
+login = True
 
 
 def clear():
@@ -64,7 +64,7 @@ try:
     conn = psycopg2.connect(
         database="pythonproject",  # database name
         user="postgres",
-        password="Nowhere25Man",  # your password
+        password="6108",  # your password
         host="127.0.0.1",
         port="5432"
     )
@@ -205,6 +205,7 @@ try:
                     f"Please select an option to add to the cart [1 - {option_counter}]")
                 selected_option = int(
                     input(f"You can also type '0' to go back to main menu: "))
+                print()
 
                 if selected_option == 0:
                     main_menu()
@@ -232,7 +233,9 @@ try:
         conn.commit()
         cursor.close()
 
-    def summary():
+    def summary(redo = False):
+
+        print("Let's see your order")
 
         if login == False:
             while True:
@@ -253,63 +256,64 @@ try:
 
         print()
 
-        while True:
-            pickup_or_delivery = input(
-                "Are you picking up the products or do you want delivery? (P/D): ").upper()
+        if not redo:
+            while True:
+                pickup_or_delivery = input(
+                    "Are you picking up the products or do you want delivery? (P/D): ").upper()
 
-            print()
+                print()
 
-            if pickup_or_delivery[:1] == "D":
-
-                cursor = conn.cursor()
-                cursor.execute(f"""SELECT user_adress, phone_number FROM users 
-                            WHERE user_id = '{current_user_id}'""")
-                data = cursor.fetchall()
-                cursor.close()
-
-                # if we don't have the needed data for delivery
-                if data[0][0] == None:
-                    print("For delivery we will need more information: ")
-
-                    # phone number input and check
-                    while True:
-                        phone_number = input("\nPhone Number: ")
-
-                        if len(str(phone_number)) != 10:
-                            print("Please, type a 10 digit phone number\n")
-
-                        else:
-                            try:
-                                phone_number = int(phone_number)
-                                break
-
-                            except:
-                                print(
-                                    "Invalid phone number, please only type numbers\n")
-
-                    adress = input("\nHome adress: ")
+                if pickup_or_delivery[:1] == "D":
 
                     cursor = conn.cursor()
-                    cursor.execute(
-                        """UPDATE users SET phone_number = '%s', user_adress = %s
-                        WHERE user_id = '%s'""", (phone_number, adress, current_user_id)
-                    )
-                    conn.commit()
+                    cursor.execute(f"""SELECT user_adress, phone_number FROM users 
+                                WHERE user_id = '{current_user_id}'""")
+                    data = cursor.fetchall()
                     cursor.close()
+
+                    # if we don't have the needed data for delivery
+                    if data[0][0] == None:
+                        print("For delivery we will need more information: ")
+
+                        # phone number input and check
+                        while True:
+                            phone_number = input("\nPhone Number: ")
+
+                            if len(str(phone_number)) != 10:
+                                print("Please, type a 10 digit phone number\n")
+
+                            else:
+                                try:
+                                    phone_number = int(phone_number)
+                                    break
+
+                                except:
+                                    print(
+                                        "Invalid phone number, please only type numbers\n")
+
+                        adress = input("\nHome adress: ")
+
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            """UPDATE users SET phone_number = '%s', user_adress = %s
+                            WHERE user_id = '%s'""", (phone_number, adress, current_user_id)
+                        )
+                        conn.commit()
+                        cursor.close()
+                        break
+
+                    # if we already have it
+                    else:
+                        print("You chose delivery!\n")
+                        break
+
+                elif pickup_or_delivery[:1] == "P":
+                    print("You chose pickup")
+                    print()
                     break
 
-                # if we already have it
                 else:
-                    print("You chose delivery!\n")
-                    break
-
-            elif pickup_or_delivery[:1] == "P":
-                print("You chose pickup")
-                print()
-                break
-
-            else:
-                print("Please, type \'P\' or \'D\'\n")
+                    print("Please, type \'P\' or \'D\'\n")
 
         cursor = conn.cursor()
         cursor.execute("""SELECT orders.order_number,
@@ -345,21 +349,23 @@ try:
 
                 print()
 
+            for x in prices:
+                subtotal = subtotal + x
+
+            tax = subtotal * 0.07
+            total = subtotal + tax
+
+            print("Subtotal -- ${:.2f}".format(subtotal))
+            print("Taxes ----- ${:.2f}".format(tax))
+            print("Total ----- ${:.2f}".format(total))
+            print()
+
         else:
-            print("Your cart is empty")
-
-        for x in prices:
-            subtotal = subtotal + x
-
-        tax = subtotal * 0.07
-        total = subtotal + tax
-
-        print("Subtotal -- ${:.2f}".format(subtotal))
-        print("Taxes ----- ${:.2f}".format(tax))
-        print("Total ----- ${:.2f}".format(total))
+            print("Your cart is empty\n")
 
         while True:
             agree = input("Are you okay with your order? (Y/N): ").upper()
+            print()
 
             if agree[:1] == 'N':
                 add_or_remove = input(
@@ -367,15 +373,15 @@ try:
 
                 while True:
                     if add_or_remove[:1] == 'A':
-                        print("Awesome, lets go back to main menu")
+                        print("Awesome, lets go back to main menu\n")
                         main_menu()
-                        summary()
+                        summary(True)
                         break
 
                     elif add_or_remove[:1] == 'R':
-                        
+
                         print(order_number_collection)
-                        
+
                         while True:
                             try:
                                 order_number = int(
@@ -389,23 +395,23 @@ try:
 
                             else:
                                 break
-                            
+
                         cursor = conn.cursor()
                         cursor.execute(
                             """DELETE FROM orders WHERE order_number = %s""" % order_number)
                         conn.commit()
                         cursor.close()
 
-                        
                         print(f"Order #{order_number} was removed")
-                        summary()
+                        summary(True)
                         break
 
                     else:
                         print("Hey! Invalid option")
+                break
 
             elif agree[:1] == 'Y':
-                print("Awesome, lets proceed with the payment")
+                print("Awesome, lets proceed with the payment\n")
                 break
 
             else:
@@ -465,6 +471,14 @@ try:
 
             except:
                 print("Please, only type numbers\n")
+
+        cursor = conn.cursor()
+        cursor.execute(
+            f"""UPDATE orders SET order_status = 'sold'
+            WHERE user_id = {current_user_id} AND order_status = 'cart'"""
+        )
+        conn.commit()
+        cursor.close()
 
         print(f"You have been charged ${total}, you're rich LOL")
 
