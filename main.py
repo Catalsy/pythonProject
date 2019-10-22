@@ -1,7 +1,15 @@
-import functions
+from functions import summary, register_user, main_menu, checkout, logout, login_user
 
-functions.summary()
-# functions.register_user()
-functions.checkout(5000)
-# functions.main_menu()
+x = input("account? ")
+
+if x == 'y':
+    login_user()
+else:
+    register_user()
+# register_user()
+main_menu()
+total = summary()
+checkout(total)
+# logout()
+# login_user()
 

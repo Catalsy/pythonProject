@@ -4,10 +4,11 @@ import os
 import psycopg2
 import re
 import getpass
+import time
 
 # GLOBAL VARIABLES
-current_user_id = 1
-login = True
+current_user_id = 0
+login = False
 
 
 def clear():
@@ -136,12 +137,53 @@ try:
         )
         record = cursor.fetchall()
         cursor.close()
-
-        current_user_id = record[0][0]
+        global current_user_id
+        global login
+        current_user_id = int(record[0][0])
         login = True
 
         print("Thank you for registering!\n")
-
+        time.sleep(1)
+    
+    def login_user():
+        print("- USER LOGIN -")
+        print()
+        
+        while True:
+            username = input("Username: ").lower()
+            password = getpass.getpass("Password: ")
+            
+            cursor = conn.cursor()
+            cursor.execute(
+                """SELECT user_username, user_password, user_id FROM users WHERE user_username = '%s'""" % username)
+            validation = cursor.fetchone()
+            cursor.close()
+            print(validation[2])
+            if validation:
+                rigth_pass = verify_password(validation[1], password)
+                if rigth_pass:
+                    global login
+                    login = True
+                    global current_user_id
+                    current_user_id = int(validation[2])
+                    print("You are logged in!\n")
+                    break
+                else:
+                    print("SORRY! The password doesn't match, let's go again\n")
+            else:
+                create_account = input("Aye young fella, there isn't an account with that username, do you want to register? (Y/N): ").upper
+                if create_account[:1] == 'Y': 
+                    register_user() 
+                    break
+                
+                elif create_account[:1] == 'N':
+                    print("Okay, let's try again\n")
+                
+                else:
+                    ("Invalid option\n")
+        time.sleep(1)
+                    
+                
     def main_menu():
         # shows main menu and returns product_id of selected product
 
@@ -373,7 +415,7 @@ try:
 
                 while True:
                     if add_or_remove[:1] == 'A':
-                        print("Awesome, lets go back to main menu\n")
+                        print("Awesome, let's go back to main menu\n")
                         main_menu()
                         summary(True)
                         break
@@ -411,7 +453,7 @@ try:
                 break
 
             elif agree[:1] == 'Y':
-                print("Awesome, lets proceed with the payment\n")
+                print("Awesome, let's proceed with the payment\n")
                 break
 
             else:
@@ -429,7 +471,7 @@ try:
                     valid = validate_card(number)
 
                     if not valid:
-                        print("That is not a valid card number, lets try again\n")
+                        print("That is not a valid card number, let's try again\n")
 
                     else:
                         print()
@@ -440,7 +482,7 @@ try:
                         input("Expiration month (number): "))
 
                     if expiration_month > 12 or expiration_month < 1:
-                        print("Invalid expiration month, lets try again\n")
+                        print("Invalid expiration month, let's try again\n")
 
                     else:
                         print()
@@ -451,7 +493,7 @@ try:
                         input("Expiration year (full number): "))
 
                     if expiration_year > 2040 or expiration_year < 2019:
-                        print("Invalid expiration year, lets try again\n")
+                        print("Invalid expiration year, let's try again\n")
 
                     else:
                         print()
@@ -461,7 +503,7 @@ try:
                     cvv = int(input("CVV: "))
 
                     if not len(str(cvv)) == 3:
-                        print("Invalid CVV, lets try again\n")
+                        print("Invalid CVV, let's try again\n")
 
                     else:
                         print()
@@ -484,7 +526,11 @@ try:
 
         print("Thank you for your purchase")
 
-        # def change_order():
+    def logout():
+        global login
+        global current_user_id
+        login = False
+        current_user_id = 0
 
 except (Exception, psycopg2.Error) as error:
     print("Error while fetching data PostgreSQL", error)
