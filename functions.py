@@ -10,6 +10,13 @@ import time
 current_user_id = 0
 login = False
 
+def prRed(skk): print("\033[91m {}\033[00m" .format(skk)) 
+def prGreen(skk): print("\033[92m {}\033[00m" .format(skk)) 
+def prYellow(skk): print("\033[93m {}\033[00m" .format(skk)) 
+def prLightPurple(skk): print("\033[94m {}\033[00m" .format(skk)) 
+def prPurple(skk): print("\033[95m {}\033[00m" .format(skk)) 
+def prCyan(skk): print("\033[96m {}\033[00m" .format(skk)) 
+def prLightGray(skk): print("\033[97m {}\033[00m" .format(skk)) 
 
 def clear():
     # for windows
@@ -72,7 +79,7 @@ try:
 
     def register_user():
         # Register user into database
-        print(" - USER REGISTRATION - ")
+        prCyan(" - USER REGISTRATION - ")
 
         # username input and check
         while True:
@@ -85,7 +92,7 @@ try:
             cursor.close()
 
             if records:
-                print("Sorry! That username already exists! Let's try another one")
+                prRed("USERNAME TAKEN")
             else:
                 break
 
@@ -103,14 +110,14 @@ try:
                 cursor.close()
 
                 if records:
-                    print("Sorry! That email is already in use! Let's try another one")
+                    prRed("EMAIL ALREADY IN USE")
 
                 else:
                     break
 
             else:
-                print(
-                    "Invalid Email adress, it should follow the format \"something@something.something\"\n")
+                prRed(
+                    "INVALID EMAIL ADDRESS\n")
 
         # password hash and verification
         while True:
@@ -121,7 +128,7 @@ try:
                 break
 
             else:
-                print("Passwords don't match, please try again\n")
+                prRed("PASSWORDS DO NOT MATCH\n")
 
         cursor = conn.cursor()
         cursor.execute(
@@ -142,23 +149,24 @@ try:
         current_user_id = int(record[0][0])
         login = True
 
-        print("Thank you for registering!\n")
+        prYellow("YOU ARE REGISTERED\n")
         time.sleep(1)
-    
+
     def login_user():
-        print("- USER LOGIN -")
+        prCyan("- USER LOGIN -")
         print()
-        
+
         while True:
             username = input("Username: ").lower()
             password = getpass.getpass("Password: ")
-            
+            print()
+
             cursor = conn.cursor()
             cursor.execute(
                 """SELECT user_username, user_password, user_id FROM users WHERE user_username = '%s'""" % username)
             validation = cursor.fetchone()
             cursor.close()
-            print(validation[2])
+
             if validation:
                 rigth_pass = verify_password(validation[1], password)
                 if rigth_pass:
@@ -166,32 +174,39 @@ try:
                     login = True
                     global current_user_id
                     current_user_id = int(validation[2])
-                    print("You are logged in!\n")
+                    prYellow("YOU ARE LOGGED IN!\n")
                     break
                 else:
-                    print("SORRY! The password doesn't match, let's go again\n")
+                    prRed("THE PASSWORD DOESN'T MATCH\n")
             else:
-                create_account = input("Aye young fella, there isn't an account with that username, do you want to register? (Y/N): ").upper
-                if create_account[:1] == 'Y': 
-                    register_user() 
+                create_account = input(
+                    "Aye young fella, there isn't an account with that username, do you want to register? (Y/N): ").upper()
+                print()
+                
+                if create_account[:1] == 'Y':
+                    register_user()
                     break
-                
+
                 elif create_account[:1] == 'N':
-                    print("Okay, let's try again\n")
-                
+                    print("Okay, try again\n")
+
                 else:
-                    ("Invalid option\n")
+                    prRed("INVALID OPTION\n")
         time.sleep(1)
-                    
-                
+
     def main_menu():
         # shows main menu and returns product_id of selected product
-
+        
         clear()
-        print("""
-               _________________
-              |      MENU       |
-              |_________________|
+        prCyan("""
+             /$$      /$$ /$$$$$$$$ /$$   /$$ /$$   /$$      
+            | $$$    /$$$| $$_____/| $$$ | $$| $$  | $$      
+            | $$$$  /$$$$| $$      | $$$$| $$| $$  | $$      
+            | $$ $$/$$ $$| $$$$$   | $$ $$ $$| $$  | $$      
+            | $$  $$$| $$| $$__/   | $$  $$$$| $$  | $$      
+            | $$\  $ | $$| $$      | $$\  $$$| $$  | $$      
+            | $$ \/  | $$| $$$$$$$$| $$ \  $$|  $$$$$$/      
+            |__/     |__/|________/|__/  \__/ \______/   
               """)
         print("PRODUCTS & SERVICES:\n")
         cursor = conn.cursor()
@@ -216,12 +231,12 @@ try:
                     input(f"Please select an option [1 - {option_counter}]: "))
 
                 if selected_option < 1 or selected_option > (option_counter):
-                    print("Please type a number within the range\n")
+                    prRed("INVALID OPTION\n")
 
                 else:
                     break
             except:
-                print("Please, only numbers\n")
+                prRed("ONLY NUMBERS\n")
         print("")
 
         selected_option = types[selected_option - 1][0]
@@ -254,12 +269,12 @@ try:
                     break
 
                 elif selected_option < 0 or selected_option > (option_counter):
-                    print("Please type a number within the range\n")
+                    prRed("INVALID OPTION\n")
 
                 else:
                     break
             except:
-                print("Please, only numbers\n")
+                prRed("ONLY NUMBERS\n")
 
         product_id = models[selected_option - 1][2]
 
@@ -275,17 +290,14 @@ try:
         conn.commit()
         cursor.close()
 
-    def summary(redo = False):
-
-        print("Let's see your order")
-
+    def summary(redo=False):
         if login == False:
             while True:
                 account = input(
                     "Do you have an account with us? (Y/N): ").upper()
 
                 if account[:1] == 'Y':
-                    # log_in()
+                    login_user()
                     break
 
                 elif account[:1] == 'N':
@@ -294,7 +306,7 @@ try:
                     break
 
                 else:
-                    print("Please, type \'Y\' or \'N\'\n")
+                    prRed("INVALID OPTION\n")
 
         print()
 
@@ -322,7 +334,7 @@ try:
                             phone_number = input("\nPhone Number: ")
 
                             if len(str(phone_number)) != 10:
-                                print("Please, type a 10 digit phone number\n")
+                                prRed("INVALID PHONE NUMBER\n")
 
                             else:
                                 try:
@@ -330,8 +342,8 @@ try:
                                     break
 
                                 except:
-                                    print(
-                                        "Invalid phone number, please only type numbers\n")
+                                    prRed(
+                                        "ONLY NUMBERS\n")
 
                         adress = input("\nHome adress: ")
 
@@ -347,15 +359,16 @@ try:
                     # if we already have it
                     else:
                         print("You chose delivery!\n")
+                        time.sleep(1)
                         break
 
                 elif pickup_or_delivery[:1] == "P":
                     print("You chose pickup")
-                    print()
+                    time.sleep(1)
                     break
 
                 else:
-                    print("Please, type \'P\' or \'D\'\n")
+                    prRed("INVALID OPTION\n")
 
         cursor = conn.cursor()
         cursor.execute("""SELECT orders.order_number,
@@ -375,14 +388,20 @@ try:
         prices = []
         order_number_collection = []
         if orders:
-            print("""
-               _________________
-              |     SUMMARY     |
-              |_________________|
+            clear()
+            prCyan("""
+              /$$$$$$  /$$   /$$ /$$      /$$ /$$      /$$  /$$$$$$  /$$$$$$$  /$$     /$$
+             /$$__  $$| $$  | $$| $$$    /$$$| $$$    /$$$ /$$__  $$| $$__  $$|  $$   /$$/
+            | $$  \__/| $$  | $$| $$$$  /$$$$| $$$$  /$$$$| $$  \ $$| $$  \ $$ \  $$ /$$/ 
+            |  $$$$$$ | $$  | $$| $$ $$/$$ $$| $$ $$/$$ $$| $$$$$$$$| $$$$$$$/  \  $$$$/  
+             \____  $$| $$  | $$| $$  $$$| $$| $$  $$$| $$| $$__  $$| $$__  $$   \  $$/   
+             /$$  \ $$| $$  | $$| $$\  $ | $$| $$\  $ | $$| $$  | $$| $$  \ $$    | $$    
+            |  $$$$$$/|  $$$$$$/| $$ \/  | $$| $$ \/  | $$| $$  | $$| $$  | $$    | $$    
+             \______/  \______/ |__/     |__/|__/     |__/|__/  |__/|__/  |__/    |__/  
               """)
 
             for order in orders:
-                print(f"""Order #{order[0]}
+                prCyan(f"""Order #{order[0]}
                 Product: {order[2]}
                 Date: {order[1]}
                 Price: ${order[3]}""")
@@ -397,43 +416,44 @@ try:
             tax = subtotal * 0.07
             total = subtotal + tax
 
-            print("Subtotal -- ${:.2f}".format(subtotal))
-            print("Taxes ----- ${:.2f}".format(tax))
-            print("Total ----- ${:.2f}".format(total))
+            prYellow("Subtotal -- ${:.2f}".format(subtotal))
+            prYellow("Taxes ----- ${:.2f}".format(tax))
+            prYellow("Total ----- ${:.2f}".format(total))
             print()
 
         else:
-            print("Your cart is empty\n")
+            prYellow("YOUR CART IS EMPTY\n")
 
         while True:
             agree = input("Are you okay with your order? (Y/N): ").upper()
             print()
 
             if agree[:1] == 'N':
-                add_or_remove = input(
-                    "Do you want to add or remove something? (A/R): ").upper()
-
                 while True:
+                    add_or_remove = input(
+                        "Do you want to add or remove products? (A/R): ").upper()
+                    print()
+
                     if add_or_remove[:1] == 'A':
-                        print("Awesome, let's go back to main menu\n")
+                        print("We are taking you back to the main menu\n")
+                        time.sleep(1)
                         main_menu()
                         summary(True)
                         break
 
                     elif add_or_remove[:1] == 'R':
-
-                        print(order_number_collection)
-
                         while True:
                             try:
                                 order_number = int(
-                                    input("Okay, give me the order # of the Item: "))
+                                    input("Give me the order # of the Item: "))
+                                print()
+                                    
                             except:
-                                print("Hey!, Only numbers")
+                                prRed("ONLY NUMBERS\n")
 
                             if order_number not in order_number_collection:
-                                print(
-                                    "SORRY! There's not an order with that number!")
+                                prRed(
+                                    "UNEXISTENT ORDER NUMBER\n")
 
                             else:
                                 break
@@ -445,11 +465,14 @@ try:
                         cursor.close()
 
                         print(f"Order #{order_number} was removed")
+                        time.sleep(1)
+                        print()
                         summary(True)
                         break
 
                     else:
-                        print("Hey! Invalid option")
+                        print("INVALID OPTION\n")
+                    
                 break
 
             elif agree[:1] == 'Y':
@@ -457,74 +480,90 @@ try:
                 break
 
             else:
-                print("Hey! Invalid option")
+                prRed("INVALID OPTION\n")
 
         return(total)
 
-    def checkout(total):  # input total and
-        print("We only accept debit/credit cards :)\n")
+    def checkout(total):
+        if total == 0:
+            print(" Thank you for coming! ")
+            return 0
+        
+        else:
+            prGreen("""
+             /$$$$$$$   /$$$$$$  /$$     /$$ /$$      /$$ /$$$$$$$$ /$$   /$$ /$$$$$$$$
+            | $$__  $$ /$$__  $$|  $$   /$$/| $$$    /$$$| $$_____/| $$$ | $$|__  $$__/
+            | $$  \ $$| $$  \ $$ \  $$ /$$/ | $$$$  /$$$$| $$      | $$$$| $$   | $$   
+            | $$$$$$$/| $$$$$$$$  \  $$$$/  | $$ $$/$$ $$| $$$$$   | $$ $$ $$   | $$   
+            | $$____/ | $$__  $$   \  $$/   | $$  $$$| $$| $$__/   | $$  $$$$   | $$   
+            | $$      | $$  | $$    | $$    | $$\  $ | $$| $$      | $$\  $$$   | $$   
+            | $$      | $$  | $$    | $$    | $$ \/  | $$| $$$$$$$$| $$ \  $$   | $$   
+            |__/      |__/  |__/    |__/    |__/     |__/|________/|__/  \__/   |__/   
+            """)
+            
+            prCyan("We only accept debit/credit cards:\n")
 
-        while True:
-            try:
-                while True:
-                    number = int(input("Card number: "))
-                    valid = validate_card(number)
+            while True:
+                try:
+                    while True:
+                        number = int(input("Card number: "))
+                        valid = validate_card(number)
 
-                    if not valid:
-                        print("That is not a valid card number, let's try again\n")
+                        if not valid:
+                            prRed("INVALID CARD NUMBER\n")
 
-                    else:
-                        print()
-                        break
+                        else:
+                            print()
+                            break
 
-                while True:
-                    expiration_month = int(
-                        input("Expiration month (number): "))
+                    while True:
+                        expiration_month = int(
+                            input("Expiration month (number): "))
 
-                    if expiration_month > 12 or expiration_month < 1:
-                        print("Invalid expiration month, let's try again\n")
+                        if expiration_month > 12 or expiration_month < 1:
+                            prRed("INVALID EXPIRATION MONTH\n")
 
-                    else:
-                        print()
-                        break
+                        else:
+                            print()
+                            break
 
-                while True:
-                    expiration_year = int(
-                        input("Expiration year (full number): "))
+                    while True:
+                        expiration_year = int(
+                            input("Expiration year (full number): "))
 
-                    if expiration_year > 2040 or expiration_year < 2019:
-                        print("Invalid expiration year, let's try again\n")
+                        if expiration_year > 2040 or expiration_year < 2019:
+                            prRed("INVALID YEAR NUMBER\n")
 
-                    else:
-                        print()
-                        break
+                        else:
+                            print()
+                            break
 
-                while True:
-                    cvv = int(input("CVV: "))
+                    while True:
+                        cvv = int(input("CVV: "))
 
-                    if not len(str(cvv)) == 3:
-                        print("Invalid CVV, let's try again\n")
+                        if not len(str(cvv)) == 3:
+                            prRed("INVALID CVV\n")
 
-                    else:
-                        print()
-                        break
+                        else:
+                            print()
+                            break
 
-                break
+                    break
 
-            except:
-                print("Please, only type numbers\n")
+                except:
+                    prRed("ONLY NUMBERS\n")
 
-        cursor = conn.cursor()
-        cursor.execute(
-            f"""UPDATE orders SET order_status = 'sold'
-            WHERE user_id = {current_user_id} AND order_status = 'cart'"""
-        )
-        conn.commit()
-        cursor.close()
+            cursor = conn.cursor()
+            cursor.execute(
+                f"""UPDATE orders SET order_status = 'sold'
+                WHERE user_id = {current_user_id} AND order_status = 'cart'"""
+            )
+            conn.commit()
+            cursor.close()
 
-        print(f"You have been charged ${total}, you're rich LOL")
-
-        print("Thank you for your purchase")
+            prYellow("You have been charged ${:.2f}, you're rich LOL".format(total))
+            print()
+            print("Thank you for your purchase")
 
     def logout():
         global login
