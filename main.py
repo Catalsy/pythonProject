@@ -32,20 +32,9 @@ while True:
         break
 
     elif existing_account[:1] == 'N':
-        while True:
-            answer = input("Do you want to create one? (Y/N): ").upper()
-                
-            if answer[:1] == 'Y':
-                register_user()
-                break
-            
-            elif answer[:1] == 'N':
-                print("Okay, no problemo hermano!")
-                break
-            
-            else:
-                prRed("INVALID OPTION\n")
-                
+        register_user()
+        break
+
     else:
         prRed("INVALID OPTION\n")
 
@@ -56,7 +45,7 @@ while True:
 
     if keep_going[:1] == 'Y':
         None
-        
+
     elif keep_going[:1] == 'N':
         break
 

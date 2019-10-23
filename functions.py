@@ -10,13 +10,27 @@ import time
 current_user_id = 0
 login = False
 
-def prRed(skk): print("\033[91m {}\033[00m" .format(skk)) 
-def prGreen(skk): print("\033[92m {}\033[00m" .format(skk)) 
-def prYellow(skk): print("\033[93m {}\033[00m" .format(skk)) 
-def prLightPurple(skk): print("\033[94m {}\033[00m" .format(skk)) 
-def prPurple(skk): print("\033[95m {}\033[00m" .format(skk)) 
-def prCyan(skk): print("\033[96m {}\033[00m" .format(skk)) 
-def prLightGray(skk): print("\033[97m {}\033[00m" .format(skk)) 
+
+def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
+
+
+def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
+
+
+def prYellow(skk): print("\033[93m {}\033[00m" .format(skk))
+
+
+def prLightPurple(skk): print("\033[94m {}\033[00m" .format(skk))
+
+
+def prPurple(skk): print("\033[95m {}\033[00m" .format(skk))
+
+
+def prCyan(skk): print("\033[96m {}\033[00m" .format(skk))
+
+
+def prLightGray(skk): print("\033[97m {}\033[00m" .format(skk))
+
 
 def clear():
     # for windows
@@ -182,7 +196,7 @@ try:
                 create_account = input(
                     "Aye young fella, there isn't an account with that username, do you want to register? (Y/N): ").upper()
                 print()
-                
+
                 if create_account[:1] == 'Y':
                     register_user()
                     break
@@ -196,7 +210,7 @@ try:
 
     def main_menu():
         # shows main menu and returns product_id of selected product
-        
+
         clear()
         prCyan("""
              /$$      /$$ /$$$$$$$$ /$$   /$$ /$$   /$$      
@@ -291,7 +305,7 @@ try:
         cursor.close()
 
     def summary(redo=False):
-        if login == False:
+        if login is False:
             while True:
                 account = input(
                     "Do you have an account with us? (Y/N): ").upper()
@@ -326,7 +340,7 @@ try:
                     cursor.close()
 
                     # if we don't have the needed data for delivery
-                    if data[0][0] == None:
+                    if data[0][0] is None:
                         print("For delivery we will need more information: ")
 
                         # phone number input and check
@@ -447,7 +461,7 @@ try:
                                 order_number = int(
                                     input("Give me the order # of the Item: "))
                                 print()
-                                    
+
                             except:
                                 prRed("ONLY NUMBERS\n")
 
@@ -472,7 +486,7 @@ try:
 
                     else:
                         print("INVALID OPTION\n")
-                    
+
                 break
 
             elif agree[:1] == 'Y':
@@ -488,8 +502,10 @@ try:
         if total == 0:
             print(" Thank you for coming! ")
             return 0
-        
+
         else:
+            time.sleep(1)
+            clear()
             prGreen("""
              /$$$$$$$   /$$$$$$  /$$     /$$ /$$      /$$ /$$$$$$$$ /$$   /$$ /$$$$$$$$
             | $$__  $$ /$$__  $$|  $$   /$$/| $$$    /$$$| $$_____/| $$$ | $$|__  $$__/
@@ -500,7 +516,7 @@ try:
             | $$      | $$  | $$    | $$    | $$ \/  | $$| $$$$$$$$| $$ \  $$   | $$   
             |__/      |__/  |__/    |__/    |__/     |__/|________/|__/  \__/   |__/   
             """)
-            
+
             prCyan("We only accept debit/credit cards:\n")
 
             while True:
@@ -561,7 +577,8 @@ try:
             conn.commit()
             cursor.close()
 
-            prYellow("You have been charged ${:.2f}, you're rich LOL".format(total))
+            prYellow(
+                "You have been charged ${:.2f}, you're rich LOL".format(total))
             print()
             print("Thank you for your purchase")
 
